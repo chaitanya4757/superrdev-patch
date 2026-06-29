@@ -7,17 +7,20 @@ export function useTasks(query, status, page, pageSize) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+ useEffect(() => {
     setLoading(true);
+    setError(null); // also clear old errors on each new request
 
     fetchTasks({ query, status, page, pageSize })
       .then((data) => {
         setTasks(data.items);
         setTotal(data.total);
-        setLoading(false);
       })
       .catch((err) => {
         setError(err.message);
+      })
+      .finally(() => {
+        setLoading(false); // Bug 4: runs whether success OR error  
       });
   }, [query, status, page, pageSize]);
 

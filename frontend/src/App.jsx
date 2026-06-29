@@ -3,15 +3,28 @@ import SearchBar from './components/SearchBar';
 import StatusFilter from './components/StatusFilter';
 import TaskTable from './components/TaskTable';
 import { useTasks } from './hooks/useTasks';
+import { useDebounce } from './hooks/useDebounce';  // Bug 6
 
 export default function App() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
 
-  const { tasks, total, loading, error } = useTasks(query, status, page, 10);
+  const debouncedQuery = useDebounce(query, 300); // Bug 6
+
+  const { tasks, total, loading, error } = useTasks(debouncedQuery, status, page, 10);  // Bug 6
 
   const totalPages = Math.ceil(total / 10);
+
+  const handleQueryChange = (newQuery) => {               
+    setQuery(newQuery);
+    setPage(1);  // Bug 5:always go back to page 1
+};
+
+const handleStatusChange = (newStatus) => {
+    setStatus(newStatus);
+    setPage(1);  // Bug 5: always go back to page 1
+};
 
   return (
     <div className="app">
@@ -21,8 +34,8 @@ export default function App() {
       </header>
 
       <div className="controls">
-        <SearchBar value={query} onChange={setQuery} />
-        <StatusFilter value={status} onChange={setStatus} />
+        <SearchBar value={query} onChange={handleQueryChange} />       
+        <StatusFilter value={status} onChange={handleStatusChange} />
       </div>
 
       <TaskTable tasks={tasks} loading={loading} error={error} />
